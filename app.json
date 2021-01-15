@@ -1,0 +1,12 @@
+{
+  "name": "hisabkitab",
+  "displayName": "hisabkitab",
+  "expo": {
+    "name": "hisabkitab",
+    "slug": "hisabkitab",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
