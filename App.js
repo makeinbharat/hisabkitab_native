@@ -40,26 +40,24 @@ const App = () => {
       hisab: newContactHisab,
     };
 
-    const transactionBody = { 
+    const transactionBody = [{ 
       name: newContactName,
       hisab: newContactHisab,
       type: newType,
       note: newContactNote,
-    };
+    }];
 
-    window.alert(JSON.stringify(transactionBody));
+    console.log(JSON.stringify(transactionBody));
 
 
     var RNFS = require('react-native-fs');
     var contactsPath = RNFS.ExternalDirectoryPath + '/contacts.txt';
-    console.log(contactsPath);
 
     RNFS.readFile(contactsPath, 'utf8')
     .then((contents) => {
       // log the file contents
       var oldContacts = contacts;
       oldContacts[oldContacts.length] = { "name": contactBody.name, "hisab": parseInt(contactBody.hisab)};
-      console.log(JSON.stringify(oldContacts));
       RNFS.writeFile(contactsPath, JSON.stringify(oldContacts), 'utf8');
 
       const readData = JSON.parse(contents);
@@ -68,8 +66,23 @@ const App = () => {
       GetContacts();
     })
     
-    var transactionPath = RNFS.ExternalDirectoryPath + '/contacts/' + transactionBody.name + '.txt';
+    var transactionPath = RNFS.ExternalDirectoryPath + '/' + transactionBody[0].name + '.txt';
     console.log(transactionPath);
+
+    RNFS.exists(transactionPath)
+    .then((exists) =>{
+      if(!exists){
+        const data = transactionBody;
+
+        RNFS.writeFile(transactionPath, JSON.stringify(data), 'utf8')
+        .then((success) => {
+          console.log('FILE WRITTEN!');
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });            
+      }
+    })
 
 
   }
@@ -100,7 +113,6 @@ const App = () => {
     RNFS.readFile(path, 'utf8')
     .then((contents) => {
       // log the file contents
-      console.log(contents);
       const readData = JSON.parse(contents);
       setContacts(readData);
     })
