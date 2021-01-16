@@ -79,16 +79,22 @@ const App = () => {
     var path = RNFS.ExternalDirectoryPath + '/contacts.txt';
   
     //Write Part Below
-    /*
-    const data = [{"name": "name", "hisab": 0}]
-    RNFS.writeFile(path, JSON.stringify(data), 'utf8')
-    .then((success) => {
-      console.log('FILE WRITTEN!');
+
+    RNFS.exists(path)
+    .then((exists) =>{
+      if(!exists){
+        const data = [{"name": "name", "hisab": 0}]
+
+        RNFS.writeFile(path, JSON.stringify(data), 'utf8')
+        .then((success) => {
+          console.log('FILE WRITTEN!');
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });            
+      }
     })
-    .catch((err) => {
-      console.log(err.message);
-    });
-    */
+
     //Read Part Below
   
     RNFS.readFile(path, 'utf8')
