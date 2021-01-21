@@ -27,14 +27,14 @@ const DetailsView = ({contact}) => {
         */
     }
 
+    const openHistory = name =>{
+      window.alert(name)
+    }
+
     return(
-        <Pressable style={styles.neulist} key={contact.name} onPress={transactionView(contact.name)}>
-            <Text style={styles.contact_name}>{contact.name}</Text>
-            <Text style={styles.contact_updated_price}>₹ {contact.hisab}</Text>
-            <Pressable style={styles.delete_contact} onPress={()=>window.alert("Delete")}>
-                <Text style={{fontSize: 16, textAlign: 'center', color: '#fcfcfc'}}>Delete</Text>
-            </Pressable>
-        </Pressable>
+      <Pressable style={styles.history_contact} onPress={()=>openHistory(contact)}>
+        <Text style={{fontSize: 16, textAlign: 'center', color: '#fcfcfc'}}>History</Text>
+      </Pressable>
     )
 
 }
@@ -108,6 +108,17 @@ const styles = StyleSheet.create({
       backgroundColor: '#cc2936',
       padding: 6,
       borderRadius: 3,
+    },
+    history_contact:{
+      display: 'flex',
+      marginLeft: 'auto',
+      marginRight: 70,
+      marginTop: -36,
+      width: 'auto',
+      height: 'auto',
+      backgroundColor: '#0e1e1e',
+      padding: 8,
+      borderRadius: 5,
     },
     add_btn:{
       width: 60,

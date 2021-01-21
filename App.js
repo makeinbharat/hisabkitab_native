@@ -1,13 +1,40 @@
 import React, {useState, useEffect} from 'react';
 import { Pressable, StyleSheet, Text, View, ScrollView, Modal, TextInput } from 'react-native';
 
+import History from "./components/detailsView"
+
 const App = () => {
   const [contacts, setContacts] = useState ([]);
   const [addContactModal, openAddNewContactModal] = useState(false);
+  const [historyModal, setHistoryModal] = useState(false);
+  const [addTransactionModal, openTransactionModal] = useState(false);
+  
+  const [newContactName, setNewContactName] = useState ('');
+  const [newContactHisab, setNewContactHisab] = useState ('');
+  const [newContactNote, setNewContactNote] = useState ('');
 
-  const [newContactName, setNewContactName] = useState ('')
-  const [newContactHisab, setNewContactHisab] = useState ('')
-  const [newContactNote, setNewContactNote] = useState ('')
+  const [transactions, setTransactions] = useState([]);
+
+  const [historyWith, setHistoryWith] = useState ('');
+
+  const validateNewTransactionFields = () =>{
+    if(!newContactName.trim()){
+      window.alert("Name is Required");
+    }
+    else if(newContactName.search(/^[a-z0-9_]+$/)){
+      window.alert("Only small case letters allowed and spaces not allowed in Name")
+    }
+    else if(!newContactHisab.trim()){
+      window.alert("Balance is Required")
+    }
+    else if(newContactHisab.search(/^-?[0-9]+$/)){
+      window.alert("Only Numbers allowed and spaces not allowed in Balance")
+    }
+    else{
+//      window.alert("New Contact Added Successfuly");
+      addNewTransaction();
+    }
+  }
 
   const validateNewContactFields = () =>{
     if(!newContactName.trim()){
@@ -122,6 +149,26 @@ const App = () => {
 
   }
   
+  const openHistory = name =>{
+    console.log(name);
+    setHistoryModal(true);
+    setHistoryWith(name);
+
+    var RNFS = require('react-native-fs');
+    var path = RNFS.ExternalDirectoryPath + '/' + name + '.txt';
+
+    RNFS.readFile(path, 'utf8')
+    .then((contents) => {
+      // log the file contents
+      const readData = JSON.parse(contents);
+      setTransactions(readData);
+      console.log(transactions);
+    })
+    .catch((err) => {
+      console.log(err.message, err.code);
+    });
+  }
+
   useEffect(() => {
       GetContacts();
   }, []);
@@ -133,7 +180,7 @@ const App = () => {
       </View>
       <ScrollView style={styles.body}>
       {contacts.slice(1).map(contact=>(
-          <Pressable style={styles.neulist} key={contact.name}>
+          <Pressable style={styles.neulist} key={contact.name} onPress={()=>openHistory(contact.name)}>
             <Text style={styles.contact_name}>{contact.name}</Text>
             <Text style={styles.contact_updated_price}>₹ {contact.hisab}</Text>
             <Pressable style={styles.delete_contact} onPress={()=>window.alert("Delete")}>
@@ -171,7 +218,56 @@ const App = () => {
           <Text style={{fontSize: 38, textAlign: 'center', color: '#fcfcfc', fontWeight: 'bold' }}>x</Text>
         </Pressable>
       </Modal>
+
+      <Modal visible={historyModal} animationType="slide">
+        <View style={styles.navbar}>
+            <Text style={styles.navTitle}>{historyWith} ka hisab</Text>
+        </View>
+        <ScrollView style={styles.body}>
+          {transactions.map(transaction=>(
+            <View key={transaction.hisab} style={{marginBottom: 10}}>
+              <Pressable style={transaction.type=="debit"?styles.debit:style.credit}>
+                <Text style={styles.contact_name}>₹ {transaction.hisab}</Text>
+                <Text style={styles.contact_updated_price}>{transaction.note}</Text>
+              </Pressable>
+            </View>
+          ))}
+          <Pressable style={styles.addContactButton} onPress={()=>openTransactionModal(true)}>
+            <Text style={{fontSize: 16, textAlign: 'center', color: '#fcfcfc'}}>Add</Text>
+          </Pressable>
+        </ScrollView>
+        <Pressable style={styles.cancel_btn} onPress={() => setHistoryModal(false)}>
+          <Text style={{fontSize: 38, textAlign: 'center', color: '#fcfcfc', fontWeight: 'bold' }}>x</Text>
+        </Pressable>
+      </Modal>
+
+      //Work From Here. Add New States for Transactions and New Total Amount.
+
+      <Modal visible={addTransactionModal} animationType="slide">
+        <View style={styles.navbar}>
+            <Text style={styles.navTitle}>Add New Transaction</Text>
+        </View>
+        <View style={styles.addContactModal}>
+          <TextInput style={{display: 'none'}} value={historyWith} />
+          <Text>{'\n'}</Text>
+          <Text style={styles.label}>Balance</Text>
+          <TextInput style={styles.textInput} onChangeText={name => setNewContactHisab(name)} value={newContactHisab} keyboardType="number-pad" />
+          <Text>{'\n'}</Text>
+          <Text style={styles.label}>Note (If Any)</Text>
+          <TextInput style={styles.textInput} onChangeText={name => setNewContactNote(name)} value={newContactNote} />
+          <Text>{'\n'}</Text>
+          <Pressable style={styles.addContactButton} onPress={validateNewTransactionFields}>
+              <Text style={{fontSize: 16, textAlign: 'center', color: '#fcfcfc'}}>Add</Text>
+          </Pressable>
+
+        </View>
+
+        <Pressable style={styles.cancel_btn} onPress={() => openTransactionModal(false)}>
+          <Text style={{fontSize: 38, textAlign: 'center', color: '#fcfcfc', fontWeight: 'bold' }}>x</Text>
+        </Pressable>
+      </Modal>
     </View>
+
   );
 }
 
@@ -247,7 +343,18 @@ const styles = StyleSheet.create({
     height: 'auto',
     backgroundColor: '#cc2936',
     padding: 6,
-    borderRadius: 3,
+    borderRadius: 5,
+  },
+  history_contact:{
+    display: 'flex',
+    marginLeft: 'auto',
+    marginRight: 70,
+    marginTop: -36,
+    width: 'auto',
+    height: 'auto',
+    backgroundColor: '#0e1e1e',
+    padding: 8,
+    borderRadius: 5,
   },
   add_btn:{
     width: 60,
@@ -304,8 +411,45 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.79,
     shadowRadius: 9,
+    elevation: 10,
+    marginTop: 10,
+  },
+  debit:{
+    width: '70%',
+    display: 'flex',
+    marginRight: 'auto',
+    marginTop: 16,
+    backgroundColor: '#2e9e4e',
+    minHeight: 100,
+    borderRadius: 10,
+    shadowColor: "#acacac",
+    shadowOffset: {
+      width: 4,
+      height: 8,
+    },
+    shadowOpacity: 0.79,
+    shadowRadius: 9,
     elevation: 6,
-  }
+    padding: 10,
+  },
+  credit:{
+    width: '70%',
+    display: 'flex',
+    marginLeft: 'auto',
+    marginTop: 16,
+    backgroundColor: '#9e2e4e',
+    minHeight: 100,
+    borderRadius: 10,
+    shadowColor: "#acacac",
+    shadowOffset: {
+      width: 4,
+      height: 8,
+    },
+    shadowOpacity: 0.79,
+    shadowRadius: 9,
+    elevation: 6,
+    padding: 10,
+  },
 });
 
 
